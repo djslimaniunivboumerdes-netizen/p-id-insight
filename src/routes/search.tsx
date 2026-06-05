@@ -6,7 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PdfViewer } from "@/components/pdf-viewer";
-import { equipment, valves, instruments } from "@/lib/mock-data";
+import { useSearch } from "@/hooks/api/useSearch";
+import { useInventory } from "@/hooks/api/useInventory";
+import { LoadingState, ErrorState, EmptyState } from "@/components/data-states";
 import { Search, Crosshair, ArrowUp, ArrowDown } from "lucide-react";
 
 export const Route = createFileRoute("/search")({
@@ -15,11 +17,17 @@ export const Route = createFileRoute("/search")({
 });
 
 function SearchPage() {
-  const all = [...equipment, ...valves, ...instruments];
   const [q, setQ] = useState("P-101");
   const [picked, setPicked] = useState<string | undefined>("P-101A");
 
-  const results = all.filter((i) => i.tag.toLowerCase().includes(q.toLowerCase()));
+  const searchQ = useSearch(q);
+  const results = searchQ.data ?? [];
+
+  // Lookup picked item details from the full inventory.
+  const invQ = useInventory();
+  const all = invQ.data
+    ? [...invQ.data.equipment, ...invQ.data.valves, ...invQ.data.instruments]
+    : [];
   const item = all.find((i) => i.tag === picked);
 
   return (
@@ -39,12 +47,20 @@ function SearchPage() {
                     <span className="text-xs text-muted-foreground">{r.type}</span>
                   </button>
                 ))}
-                {results.length === 0 && <div className="px-3 py-2 text-xs text-muted-foreground">No results</div>}
+                {!searchQ.isLoading && results.length === 0 && <div className="px-3 py-2 text-xs text-muted-foreground">No results</div>}
+                {searchQ.isLoading && <div className="px-3 py-2 text-xs text-muted-foreground">Searching…</div>}
               </div>
             )}
           </div>
 
           <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{results.length} results</div>
+
+          {searchQ.isLoading && <LoadingState label="Searching…" />}
+          {searchQ.isError && <ErrorState error={searchQ.error} onRetry={() => searchQ.refetch()} label="Search failed." />}
+          {!searchQ.isLoading && !searchQ.isError && searchQ.isEmpty && (
+            <EmptyState label="No tags match your query." />
+          )}
+
           <div className="space-y-2">
             {results.map((r) => (
               <Card key={r.tag} className={`cursor-pointer border-border bg-panel transition-colors ${picked === r.tag ? "ring-2 ring-primary" : ""}`} onClick={() => setPicked(r.tag)}>

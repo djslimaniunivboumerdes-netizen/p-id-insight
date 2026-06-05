@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { exports as exportsList } from "@/lib/mock-data";
+import { useExports } from "@/hooks/api/useExports";
+import { LoadingState, ErrorState, EmptyState } from "@/components/data-states";
 import { FileText, FileSpreadsheet, Download, CheckCircle2, Loader2, Map, Boxes, ScanSearch } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,6 +24,9 @@ const exportTypes = [
 ];
 
 function ExportsPage() {
+  const exportsQ = useExports();
+  const exportsList = exportsQ.data ?? [];
+
   const [jobs, setJobs] = useState<{ id: string; label: string; progress: number }[]>([]);
 
   const start = (label: string) => {
@@ -90,21 +94,26 @@ function ExportsPage() {
               <h3 className="font-semibold">Recent Exports</h3>
               <span className="text-xs text-muted-foreground">{exportsList.length} files</span>
             </div>
-            <ul className="divide-y divide-border">
-              {exportsList.map((e) => (
-                <li key={e.id} className="flex items-center gap-3 px-4 py-3 hover:bg-accent/20">
-                  <div className="grid h-9 w-9 place-items-center rounded-md bg-accent/40">
-                    {e.type === "Excel" ? <FileSpreadsheet className="h-4 w-4 text-success" /> : <FileText className="h-4 w-4 text-destructive" />}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate font-mono text-sm font-medium">{e.name}</div>
-                    <div className="text-xs text-muted-foreground">{e.size} · {e.date}</div>
-                  </div>
-                  <Badge variant="outline" className="border-success/40 text-success text-[10px]">Complete</Badge>
-                  <Button variant="ghost" size="icon" className="h-8 w-8"><Download className="h-4 w-4" /></Button>
-                </li>
-              ))}
-            </ul>
+            {exportsQ.isLoading && <LoadingState label="Loading exports…" />}
+            {exportsQ.isError && <ErrorState error={exportsQ.error} onRetry={() => exportsQ.refetch()} label="Couldn't load exports." />}
+            {exportsQ.isEmpty && <EmptyState label="No exports generated yet." />}
+            {!exportsQ.isLoading && !exportsQ.isError && exportsList.length > 0 && (
+              <ul className="divide-y divide-border">
+                {exportsList.map((e) => (
+                  <li key={e.id} className="flex items-center gap-3 px-4 py-3 hover:bg-accent/20">
+                    <div className="grid h-9 w-9 place-items-center rounded-md bg-accent/40">
+                      {e.type === "Excel" ? <FileSpreadsheet className="h-4 w-4 text-success" /> : <FileText className="h-4 w-4 text-destructive" />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-mono text-sm font-medium">{e.name}</div>
+                      <div className="text-xs text-muted-foreground">{e.size} · {e.date}</div>
+                    </div>
+                    <Badge variant="outline" className="border-success/40 text-success text-[10px]">Complete</Badge>
+                    <Button variant="ghost" size="icon" className="h-8 w-8"><Download className="h-4 w-4" /></Button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </CardContent>
         </Card>
       </div>
