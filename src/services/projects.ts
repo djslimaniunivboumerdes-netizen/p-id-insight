@@ -1,19 +1,12 @@
-import { projects as mockProjects, tools as mockTools } from "@/lib/mock-data";
-import { fetchOrMock } from "./api";
+import { listProjectsFn, getProjectFn, listToolsFn, type ProjectDTO } from "@/lib/pid/api.functions";
+import { tools as mockTools } from "@/lib/mock-data";
 
-export type Project = (typeof mockProjects)[number];
+export type Project = ProjectDTO;
 export type Tool = (typeof mockTools)[number];
 
 export const projectsService = {
-  list: (): Promise<Project[]> =>
-    fetchOrMock<Project[]>("/projects", () => [...mockProjects]),
-
+  list: (): Promise<Project[]> => listProjectsFn(),
   get: (id: string): Promise<Project | undefined> =>
-    fetchOrMock<Project | undefined>(
-      `/projects/${encodeURIComponent(id)}`,
-      () => mockProjects.find((p) => p.id === id),
-    ),
-
-  listTools: (): Promise<Tool[]> =>
-    fetchOrMock<Tool[]>("/tools", () => [...mockTools]),
+    getProjectFn({ data: { id } }).then((p) => p ?? undefined),
+  listTools: (): Promise<Tool[]> => listToolsFn(),
 };

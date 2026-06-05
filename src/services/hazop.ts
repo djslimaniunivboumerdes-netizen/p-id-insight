@@ -1,9 +1,8 @@
-import { hazop as mockHazop } from "@/lib/mock-data";
-import { fetchOrMock } from "./api";
+import { listHazopFn, type HazopGroupDTO } from "@/lib/pid/api.functions";
 
-export type HazopGroup = (typeof mockHazop)[number];
+export type HazopGroup = HazopGroupDTO;
 
 export const hazopService = {
   list: (projectId?: string): Promise<HazopGroup[]> =>
-    fetchOrMock<HazopGroup[]>("/hazop", () => [...mockHazop], { query: { projectId } }),
+    listHazopFn({ data: { projectId } }),
 };

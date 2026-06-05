@@ -1,9 +1,8 @@
-import { issues as mockIssues } from "@/lib/mock-data";
-import { fetchOrMock } from "./api";
+import { listIssuesFn, type IssueDTO } from "@/lib/pid/api.functions";
 
-export type Issue = (typeof mockIssues)[number];
+export type Issue = IssueDTO;
 
 export const issuesService = {
   list: (projectId?: string): Promise<Issue[]> =>
-    fetchOrMock<Issue[]>("/issues", () => [...mockIssues], { query: { projectId } }),
+    listIssuesFn({ data: { projectId } }),
 };

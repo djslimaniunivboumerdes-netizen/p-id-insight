@@ -1,15 +1,17 @@
 import {
-  equipment as mockEquipment,
-  valves as mockValves,
-  instruments as mockInstruments,
-  pipelines as mockPipelines,
-} from "@/lib/mock-data";
-import { fetchOrMock } from "./api";
+  getInventoryFn,
+  listEquipmentFn,
+  getEquipmentByTagFn,
+  type EquipmentDTO,
+  type ValveDTO,
+  type InstrumentDTO,
+  type PipelineDTO,
+} from "@/lib/pid/api.functions";
 
-export type Equipment = (typeof mockEquipment)[number];
-export type Valve = (typeof mockValves)[number];
-export type Instrument = (typeof mockInstruments)[number];
-export type Pipeline = (typeof mockPipelines)[number];
+export type Equipment = EquipmentDTO;
+export type Valve = ValveDTO;
+export type Instrument = InstrumentDTO;
+export type Pipeline = PipelineDTO;
 
 export interface Inventory {
   equipment: Equipment[];
@@ -20,27 +22,9 @@ export interface Inventory {
 
 export const inventoryService = {
   getAll: (projectId?: string): Promise<Inventory> =>
-    fetchOrMock<Inventory>(
-      "/inventory",
-      () => ({
-        equipment: [...mockEquipment],
-        valves: [...mockValves],
-        instruments: [...mockInstruments],
-        pipelines: [...mockPipelines],
-      }),
-      { query: { projectId } },
-    ),
-
+    getInventoryFn({ data: { projectId } }),
   listEquipment: (projectId?: string): Promise<Equipment[]> =>
-    fetchOrMock<Equipment[]>(
-      "/equipment",
-      () => [...mockEquipment],
-      { query: { projectId } },
-    ),
-
-  getEquipment: (tag: string): Promise<Equipment | undefined> =>
-    fetchOrMock<Equipment | undefined>(
-      `/equipment/${encodeURIComponent(tag)}`,
-      () => mockEquipment.find((e) => e.tag === tag),
-    ),
+    listEquipmentFn({ data: { projectId } }),
+  getEquipment: (tag: string, projectId?: string): Promise<Equipment | undefined> =>
+    getEquipmentByTagFn({ data: { tag, projectId } }).then((e) => e ?? undefined),
 };
