@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Upload as UploadIcon, FileText, X, CheckCircle2 } from "lucide-react";
-import { projects } from "@/lib/mock-data";
+import { useProjects } from "@/hooks/api/useProjects";
+import { LoadingState, ErrorState, EmptyState } from "@/components/data-states";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/upload")({
@@ -15,6 +16,9 @@ export const Route = createFileRoute("/upload")({
 });
 
 function UploadPage() {
+  const projectsQ = useProjects();
+  const projects = projectsQ.data ?? [];
+
   const [file, setFile] = useState<{ name: string; size: string; pages: number; progress: number } | null>(null);
   const [dragOver, setDragOver] = useState(false);
 
@@ -96,16 +100,21 @@ function UploadPage() {
               <h3 className="font-semibold">Recent Projects</h3>
               <p className="text-xs text-muted-foreground">Pick up where you left off</p>
             </div>
-            <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
-              {projects.map((p) => (
-                <Link key={p.id} to="/workspace" className="group rounded-md border border-border bg-background p-3 transition-colors hover:border-primary/50 hover:bg-accent/30">
-                  <FileText className="h-5 w-5 text-primary" />
-                  <div className="mt-2 text-sm font-medium leading-tight group-hover:text-primary">{p.name}</div>
-                  <div className="mt-1 font-mono text-[11px] text-muted-foreground">{p.pages} sheets · {p.updated}</div>
-                  <Badge variant="outline" className="mt-2 text-[10px]">{p.status}</Badge>
-                </Link>
-              ))}
-            </div>
+            {projectsQ.isLoading && <LoadingState label="Loading projects…" />}
+            {projectsQ.isError && <ErrorState error={projectsQ.error} onRetry={() => projectsQ.refetch()} label="Couldn't load projects." />}
+            {projectsQ.isEmpty && <EmptyState label="No projects yet. Upload your first P&ID above." />}
+            {!projectsQ.isLoading && !projectsQ.isError && projects.length > 0 && (
+              <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
+                {projects.map((p) => (
+                  <Link key={p.id} to="/workspace" className="group rounded-md border border-border bg-background p-3 transition-colors hover:border-primary/50 hover:bg-accent/30">
+                    <FileText className="h-5 w-5 text-primary" />
+                    <div className="mt-2 text-sm font-medium leading-tight group-hover:text-primary">{p.name}</div>
+                    <div className="mt-1 font-mono text-[11px] text-muted-foreground">{p.pages} sheets · {p.updated}</div>
+                    <Badge variant="outline" className="mt-2 text-[10px]">{p.status}</Badge>
+                  </Link>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -83,10 +83,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Industrial P&ID PDF analysis with inventory generation, smart search, HAZOP assistance, and inspection." },
       { name: "author", content: "pid_ai" },
       { property: "og:title", content: "pid_ai — AI-Assisted P&ID Intelligence" },
-      { property: "og:description", content: "Industrial P&ID PDF analysis platform for EPC, refinery, and LNG engineering teams." },
+      { property: "og:description", content: "Industrial P&ID PDF analysis with inventory generation, smart search, HAZOP assistance, and inspection." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "pid_ai — AI-Assisted P&ID Intelligence" },
+      { name: "twitter:description", content: "Industrial P&ID PDF analysis with inventory generation, smart search, HAZOP assistance, and inspection." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/4adf8923-9c33-45e6-95e1-a0ebd8b78de1" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/4adf8923-9c33-45e6-95e1-a0ebd8b78de1" },
     ],
     links: [
       {

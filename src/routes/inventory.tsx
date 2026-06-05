@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Download, FileSpreadsheet, FileText, Search } from "lucide-react";
-import { equipment, valves, instruments, pipelines } from "@/lib/mock-data";
+import { useInventory } from "@/hooks/api/useInventory";
+import { LoadingState, ErrorState, EmptyState } from "@/components/data-states";
 import { ConfidenceBar, StatusBadge } from "@/components/badges";
 import { toast } from "sonner";
 
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/inventory")({
 type Row = { tag: string; type: string; line: string; size: string; page: number; confidence: number; status: any };
 
 function InventoryTable({ rows }: { rows: Row[] }) {
+  if (rows.length === 0) return <EmptyState label="No items in this category." />;
   return (
     <div className="rounded-md border border-border bg-panel overflow-hidden">
       <Table>
@@ -51,6 +53,10 @@ function InventoryTable({ rows }: { rows: Row[] }) {
 }
 
 function Inventory() {
+  const inv = useInventory();
+  const data = inv.data ?? { equipment: [], valves: [], instruments: [], pipelines: [] };
+  const { equipment, valves, instruments, pipelines } = data;
+
   const pipelineRows: Row[] = pipelines.map((p) => ({
     tag: p.tag, type: `Pipeline · ${p.fluid}`, line: `${p.from} → ${p.to}`, size: p.size, page: p.page, confidence: 0.95, status: p.status,
   }));
@@ -73,6 +79,9 @@ function Inventory() {
         }
       />
       <div className="space-y-4 p-4 md:p-6">
+        {inv.isLoading && <LoadingState label="Loading inventory…" />}
+        {inv.isError && <ErrorState error={inv.error} onRetry={() => inv.refetch()} label="Couldn't load inventory." />}
+
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {[
             { label: "Equipment", value: equipment.length },

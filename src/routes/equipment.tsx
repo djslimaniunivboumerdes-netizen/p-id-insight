@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { equipment } from "@/lib/mock-data";
+import { useEquipment } from "@/hooks/api/useEquipment";
+import { LoadingState, ErrorState, EmptyState } from "@/components/data-states";
 import { StatusBadge } from "@/components/badges";
 import { Search, Cog, MapPin } from "lucide-react";
 
@@ -15,6 +16,9 @@ export const Route = createFileRoute("/equipment")({
 });
 
 function EquipmentDb() {
+  const eq = useEquipment();
+  const equipment = eq.data ?? [];
+
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState("all");
   const types = ["all", ...Array.from(new Set(equipment.map((e) => e.type.split(" ")[0])))];
@@ -38,44 +42,50 @@ function EquipmentDb() {
           </div>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {list.map((e) => (
-            <Card key={e.tag} className="border-border bg-panel transition-colors hover:border-primary/40">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="grid h-9 w-9 place-items-center rounded-md bg-primary/10 text-primary ring-1 ring-primary/20">
-                      <Cog className="h-4 w-4" />
+        {eq.isLoading && <LoadingState label="Loading equipment…" />}
+        {eq.isError && <ErrorState error={eq.error} onRetry={() => eq.refetch()} label="Couldn't load equipment." />}
+        {eq.isEmpty && <EmptyState label="No equipment in the registry yet." />}
+
+        {!eq.isLoading && !eq.isError && (
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {list.map((e) => (
+              <Card key={e.tag} className="border-border bg-panel transition-colors hover:border-primary/40">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="grid h-9 w-9 place-items-center rounded-md bg-primary/10 text-primary ring-1 ring-primary/20">
+                        <Cog className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <div className="font-mono text-base font-semibold">{e.tag}</div>
+                        <div className="text-xs text-muted-foreground">{e.type}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-mono text-base font-semibold">{e.tag}</div>
-                      <div className="text-xs text-muted-foreground">{e.type}</div>
+                    <StatusBadge status={e.status} />
+                  </div>
+                  <div className="mt-4 space-y-1.5 text-xs">
+                    {e.suction && <Row k="Suction" v={e.suction} />}
+                    {e.discharge && <Row k="Discharge" v={e.discharge} />}
+                    <Row k="Line" v={e.line} />
+                    <Row k="Size" v={e.size} />
+                    <Row k="Instruments" v={e.instruments.join(", ") || "—"} />
+                  </div>
+                  <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
+                    <div className="flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
+                      <MapPin className="h-3 w-3" /> Sheet {e.page}
                     </div>
+                    <Button size="sm" variant="ghost" className="h-7 text-xs">View →</Button>
                   </div>
-                  <StatusBadge status={e.status} />
-                </div>
-                <div className="mt-4 space-y-1.5 text-xs">
-                  {e.suction && <Row k="Suction" v={e.suction} />}
-                  {e.discharge && <Row k="Discharge" v={e.discharge} />}
-                  <Row k="Line" v={e.line} />
-                  <Row k="Size" v={e.size} />
-                  <Row k="Instruments" v={e.instruments.join(", ") || "—"} />
-                </div>
-                <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-                  <div className="flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
-                    <MapPin className="h-3 w-3" /> Sheet {e.page}
-                  </div>
-                  <Button size="sm" variant="ghost" className="h-7 text-xs">View →</Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-          {list.length === 0 && (
-            <div className="col-span-full rounded-md border border-dashed border-border bg-panel/40 p-12 text-center text-sm text-muted-foreground">
-              No equipment matches your filter.
-            </div>
-          )}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+            {list.length === 0 && equipment.length > 0 && (
+              <div className="col-span-full rounded-md border border-dashed border-border bg-panel/40 p-12 text-center text-sm text-muted-foreground">
+                No equipment matches your filter.
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

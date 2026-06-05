@@ -7,7 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { tools, equipment, issues } from "@/lib/mock-data";
+import { useTools } from "@/hooks/api/useProjects";
+import { useEquipment } from "@/hooks/api/useEquipment";
+import { useIssues } from "@/hooks/api/useIssues";
+import { LoadingState, ErrorState, EmptyState } from "@/components/data-states";
 import * as Icons from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SeverityBadge, StatusBadge, ConfidenceBar } from "@/components/badges";
@@ -18,6 +21,9 @@ export const Route = createFileRoute("/workspace")({
 });
 
 function Workspace() {
+  const toolsQ = useTools();
+  const tools = toolsQ.data ?? [];
+
   const [activeTool, setActiveTool] = useState("inventory");
   const [selected, setSelected] = useState<string | undefined>("P-101A");
 
@@ -67,14 +73,14 @@ function Workspace() {
 
         {/* Right panel */}
         <aside className="flex w-full shrink-0 flex-col border-t border-border bg-panel lg:w-96 lg:border-l lg:border-t-0">
-          <RightPanel tool={activeTool} selected={selected} onSelect={setSelected} />
+          <RightPanel tool={activeTool} selected={selected} onSelect={setSelected} tools={tools} />
         </aside>
       </div>
     </div>
   );
 }
 
-function RightPanel({ tool, selected, onSelect }: { tool: string; selected?: string; onSelect: (t: string) => void }) {
+function RightPanel({ tool, selected, onSelect, tools }: { tool: string; selected?: string; onSelect: (t: string) => void; tools: { id: string; name: string; desc: string; icon: string; route: string }[] }) {
   const toolMeta = tools.find((t) => t.id === tool);
   const Icon = (Icons as any)[toolMeta?.icon ?? "Square"];
   return (
@@ -102,6 +108,11 @@ function RightPanel({ tool, selected, onSelect }: { tool: string; selected?: str
 }
 
 function InventoryPanel({ onSelect, selected }: { onSelect: (t: string) => void; selected?: string }) {
+  const q = useEquipment();
+  const equipment = q.data ?? [];
+  if (q.isLoading) return <LoadingState label="Loading equipment…" />;
+  if (q.isError) return <ErrorState error={q.error} onRetry={() => q.refetch()} />;
+  if (q.isEmpty) return <EmptyState label="No equipment detected." />;
   return (
     <div className="space-y-2">
       <div className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Equipment ({equipment.length})</div>
@@ -126,11 +137,15 @@ function InventoryPanel({ onSelect, selected }: { onSelect: (t: string) => void;
 
 function SearchPanel({ onSelect }: { onSelect: (t: string) => void }) {
   const [q, setQ] = useState("P-101");
+  const eqQ = useEquipment();
+  const equipment = eqQ.data ?? [];
   const results = equipment.filter((e) => e.tag.toLowerCase().includes(q.toLowerCase()));
   return (
     <div className="space-y-3">
       <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search e.g. P-101A, PSV-114" className="font-mono" />
       <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{results.length} matches</div>
+      {eqQ.isLoading && <LoadingState label="Loading…" />}
+      {eqQ.isError && <ErrorState error={eqQ.error} onRetry={() => eqQ.refetch()} />}
       {results.map((e) => (
         <Card key={e.tag} className="border-border bg-background">
           <CardContent className="p-3">
@@ -171,6 +186,11 @@ function HazopMini() {
   );
 }
 function InspectorMini() {
+  const q = useIssues();
+  const issues = q.data ?? [];
+  if (q.isLoading) return <LoadingState label="Loading findings…" />;
+  if (q.isError) return <ErrorState error={q.error} onRetry={() => q.refetch()} />;
+  if (q.isEmpty) return <EmptyState label="No findings." />;
   return (
     <div className="space-y-2">
       {issues.slice(0, 4).map((i) => (
@@ -189,6 +209,11 @@ function ColorMini() {
   return <div className="text-xs text-muted-foreground">Adjust diameter-color mapping in Settings.</div>;
 }
 function EquipmentMini({ onSelect }: { onSelect: (t: string) => void }) {
+  const q = useEquipment();
+  const equipment = q.data ?? [];
+  if (q.isLoading) return <LoadingState label="Loading…" />;
+  if (q.isError) return <ErrorState error={q.error} onRetry={() => q.refetch()} />;
+  if (q.isEmpty) return <EmptyState label="No equipment." />;
   return (
     <div className="space-y-2">
       {equipment.slice(0, 5).map((e) => (

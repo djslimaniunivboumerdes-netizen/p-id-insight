@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/app-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { defaultColorRules } from "@/lib/mock-data";
+import { useColorRules } from "@/hooks/api/useColorRules";
+import type { ColorRule } from "@/services/settings";
+import { LoadingState, ErrorState } from "@/components/data-states";
 import { Plus, Trash2, Save } from "lucide-react";
 import { toast } from "sonner";
 
@@ -17,7 +19,13 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
-  const [rules, setRules] = useState(defaultColorRules);
+  const rulesQ = useColorRules();
+  const [rules, setRules] = useState<ColorRule[]>([]);
+
+  // Sync local edit state once the server data arrives.
+  useEffect(() => {
+    if (rulesQ.data) setRules(rulesQ.data);
+  }, [rulesQ.data]);
 
   return (
     <div>
@@ -30,6 +38,10 @@ function SettingsPage() {
             <CardContent className="p-5">
               <h3 className="font-semibold">Pipeline Diameter → Color</h3>
               <p className="mt-1 text-xs text-muted-foreground">Define how pipe diameters are color-coded in the viewer overlay.</p>
+
+              {rulesQ.isLoading && <LoadingState label="Loading rules…" />}
+              {rulesQ.isError && <ErrorState error={rulesQ.error} onRetry={() => rulesQ.refetch()} label="Couldn't load color rules." />}
+
               <div className="mt-4 space-y-2">
                 {rules.map((r, i) => (
                   <div key={r.id} className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-background p-2.5">
