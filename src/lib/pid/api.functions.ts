@@ -190,12 +190,22 @@ export const uploadAndProcessFn = createServerFn({ method: "POST" })
       }
 
       // 6. Persist tags
-      const eqRows: Array<Record<string, unknown>> = [];
-      const valveRows: Array<Record<string, unknown>> = [];
-      const instRows: Array<Record<string, unknown>> = [];
+      type TagRow = {
+        project_id: string;
+        tag: string;
+        type: string;
+        page: number;
+        confidence: number;
+        status: string;
+        line: string;
+        size: string;
+      };
+      const eqRows: TagRow[] = [];
+      const valveRows: TagRow[] = [];
+      const instRows: TagRow[] = [];
 
       for (const t of extraction.tags) {
-        const base = {
+        const base: TagRow = {
           project_id: projectId,
           tag: t.tag,
           type: t.type,
@@ -219,10 +229,14 @@ export const uploadAndProcessFn = createServerFn({ method: "POST" })
         status: "operational",
       }));
 
-      if (eqRows.length) await supabaseAdmin.from("equipment").insert(eqRows);
-      if (valveRows.length) await supabaseAdmin.from("valves").insert(valveRows);
-      if (instRows.length) await supabaseAdmin.from("instruments").insert(instRows);
-      if (lineRows.length) await supabaseAdmin.from("pipelines").insert(lineRows);
+      if (eqRows.length)
+        await supabaseAdmin.from("equipment").insert(eqRows as never);
+      if (valveRows.length)
+        await supabaseAdmin.from("valves").insert(valveRows as never);
+      if (instRows.length)
+        await supabaseAdmin.from("instruments").insert(instRows as never);
+      if (lineRows.length)
+        await supabaseAdmin.from("pipelines").insert(lineRows as never);
 
       // 7. Seed minimal HAZOP scaffold so the page has something to show
       const hazopRows = [
