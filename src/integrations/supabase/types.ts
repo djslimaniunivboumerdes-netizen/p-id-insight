@@ -14,7 +14,424 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      color_rules: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          label: string
+          max: number
+          min: number
+          sort_order: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          label: string
+          max?: number
+          min?: number
+          sort_order?: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          label?: string
+          max?: number
+          min?: number
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      equipment: {
+        Row: {
+          confidence: number
+          created_at: string
+          discharge: string | null
+          id: string
+          instruments: string[]
+          line: string
+          page: number
+          project_id: string
+          size: string
+          status: string
+          suction: string | null
+          tag: string
+          type: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          discharge?: string | null
+          id?: string
+          instruments?: string[]
+          line?: string
+          page?: number
+          project_id: string
+          size?: string
+          status?: string
+          suction?: string | null
+          tag: string
+          type?: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          discharge?: string | null
+          id?: string
+          instruments?: string[]
+          line?: string
+          page?: number
+          project_id?: string
+          size?: string
+          status?: string
+          suction?: string | null
+          tag?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exports: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          project_id: string | null
+          size: string
+          status: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          project_id?: string | null
+          size?: string
+          status?: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          project_id?: string | null
+          size?: string
+          status?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exports_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hazop_items: {
+        Row: {
+          cause: string
+          consequence: string
+          created_at: string
+          deviation: string
+          id: string
+          project_id: string
+          recommendation: string
+          safeguard: string
+          sort_order: number
+        }
+        Insert: {
+          cause?: string
+          consequence?: string
+          created_at?: string
+          deviation: string
+          id?: string
+          project_id: string
+          recommendation?: string
+          safeguard?: string
+          sort_order?: number
+        }
+        Update: {
+          cause?: string
+          consequence?: string
+          created_at?: string
+          deviation?: string
+          id?: string
+          project_id?: string
+          recommendation?: string
+          safeguard?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hazop_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instruments: {
+        Row: {
+          confidence: number
+          created_at: string
+          id: string
+          line: string
+          page: number
+          project_id: string
+          size: string
+          status: string
+          tag: string
+          type: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          id?: string
+          line?: string
+          page?: number
+          project_id: string
+          size?: string
+          status?: string
+          tag: string
+          type?: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          id?: string
+          line?: string
+          page?: number
+          project_id?: string
+          size?: string
+          status?: string
+          tag?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instruments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      issues: {
+        Row: {
+          action: string
+          category: string
+          created_at: string
+          explanation: string
+          id: string
+          project_id: string
+          severity: string
+          tag: string
+          title: string
+        }
+        Insert: {
+          action?: string
+          category?: string
+          created_at?: string
+          explanation?: string
+          id?: string
+          project_id: string
+          severity?: string
+          tag?: string
+          title: string
+        }
+        Update: {
+          action?: string
+          category?: string
+          created_at?: string
+          explanation?: string
+          id?: string
+          project_id?: string
+          severity?: string
+          tag?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issues_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ocr_text: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          page: number
+          project_id: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          id?: string
+          page: number
+          project_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          page?: number
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ocr_text_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pipelines: {
+        Row: {
+          created_at: string
+          fluid: string
+          from_tag: string | null
+          id: string
+          page: number
+          project_id: string
+          size: string
+          status: string
+          tag: string
+          to_tag: string | null
+        }
+        Insert: {
+          created_at?: string
+          fluid?: string
+          from_tag?: string | null
+          id?: string
+          page?: number
+          project_id: string
+          size?: string
+          status?: string
+          tag: string
+          to_tag?: string | null
+        }
+        Update: {
+          created_at?: string
+          fluid?: string
+          from_tag?: string | null
+          id?: string
+          page?: number
+          project_id?: string
+          size?: string
+          status?: string
+          tag?: string
+          to_tag?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipelines_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          created_at: string
+          file_path: string | null
+          file_size_bytes: number | null
+          id: string
+          name: string
+          page_count: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          file_path?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          name: string
+          page_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          file_path?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          name?: string
+          page_count?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      valves: {
+        Row: {
+          confidence: number
+          created_at: string
+          id: string
+          line: string
+          page: number
+          project_id: string
+          size: string
+          status: string
+          tag: string
+          type: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          id?: string
+          line?: string
+          page?: number
+          project_id: string
+          size?: string
+          status?: string
+          tag: string
+          type?: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          id?: string
+          line?: string
+          page?: number
+          project_id?: string
+          size?: string
+          status?: string
+          tag?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "valves_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
